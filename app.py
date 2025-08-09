@@ -35,63 +35,99 @@ if uploaded_file is not None:
     st.write("### Handle Missing Values")
     if df.isnull().sum().sum() > 0:
         st.write("Missing values detected:")
-        st.write(df.isnull().sum())
+        missing_counts = df.isnull().sum()
+        st.write(missing_counts[missing_counts > 0])  # Only show columns with missing values
+
+        # Get list of columns with missing values
+        cols_with_missing = df.columns[df.isnull().any()].tolist()
+        
+        # Let user select which columns to handle
+        selected_cols = st.multiselect(
+            "Select columns to handle (default: all)",
+            options=cols_with_missing,
+            default=cols_with_missing
+        )
+        
+        if not selected_cols:
+            st.warning("Please select at least one column to proceed")
+            st.stop()
 
         # Option to drop or fill missing values
         missing_value_option = st.radio(
             "Choose how to handle missing values:",
-            ("Drop rows with missing values", "Fill missing values with mean/median/mode")
+            ("Drop rows with missing values", "Fill missing values"),
+            horizontal=True
         )
 
         if missing_value_option == "Drop rows with missing values":
-            df = df.dropna()
-            st.write("Rows with missing values dropped.")
+            # Only drop rows where selected columns have missing values
+            df = df.dropna(subset=selected_cols)
+            st.success(f"Rows with missing values in selected columns dropped. New shape: {df.shape}")
         else:
-             # Get list of columns with missing values
-            cols_with_missing = df.columns[df.isnull().any()].tolist()
+            with st.expander("Advanced Filling Options", expanded=True):
+                for col in selected_cols:
+                    st.subheader(f"Column: {col}")
+                    col1, col2 = st.columns([1, 3])
+                    
+                    with col1:
+                        # Check data type of column
+                        if pd.api.types.is_numeric_dtype(df[col]):
+                            fill_method = st.selectbox(
+                                f"Method for '{col}'",
+                                ["Mean", "Median", "Specific value", "Interpolate", "KNN Impute"],
+                                key=f"num_{col}"
+                            )
+                        else:
+                            fill_method = st.selectbox(
+                                f"Method for '{col}'",
+                                ["Mode", "Specific value", "Forward fill", "Backward fill"],
+                                key=f"cat_{col}"
+                            )
+                    
+                    with col2:
+                        if fill_method == "Specific value":
+                            if pd.api.types.is_numeric_dtype(df[col]):
+                                val = st.number_input(
+                                    f"Enter fill value for '{col}'",
+                                    value=df[col].mean() if not df[col].empty else 0,
+                                    key=f"num_val_{col}"
+                                )
+                            else:
+                                val = st.text_input(
+                                    f"Enter fill value for '{col}'",
+                                    value="UNKNOWN",
+                                    key=f"cat_val_{col}"
+                                )
+                            df[col] = df[col].fillna(val)
+                        elif fill_method == "Mean":
+                            df[col] = df[col].fillna(df[col].mean())
+                        elif fill_method == "Median":
+                            df[col] = df[col].fillna(df[col].median())
+                        elif fill_method == "Mode":
+                            df[col] = df[col].fillna(df[col].mode()[0])
+                        elif fill_method == "Interpolate":
+                            df[col] = df[col].interpolate()
+                        elif fill_method == "Forward fill":
+                            df[col] = df[col].ffill()
+                        elif fill_method == "Backward fill":
+                            df[col] = df[col].bfill()
+                        elif fill_method == "KNN Impute":
+                            try:
+                                from sklearn.impute import KNNImputer
+                                imputer = KNNImputer(n_neighbors=3)
+                                df[col] = imputer.fit_transform(df[[col]])
+                                st.info("Used KNN imputation (scikit-learn required)")
+                            except ImportError:
+                                st.error("KNN imputation requires scikit-learn. Using mean instead.")
+                                df[col] = df[col].fillna(df[col].mean())
+                        
+                        st.info(f"Applied {fill_method} to column '{col}'")
+                        st.write(f"Missing before: {missing_counts[col]}, After: {df[col].isnull().sum()}")
 
-            for col in cols_with_missing:
-                st.write(f"\nHandling missing values for column: **{col}**")
-
-            # Check data type of column
-            if pd.api.types.is_numeric_dtype(df[col]):
-                fill_method = st.selectbox(
-                    f"Choose fill method for {col}:",
-                    ["Mean", "Median", "Specific value", "Interpolate"],
-                    key=f"num_{col}"
-                )
-                if fill_method == "Mean":
-                    df[col] = df[col].fillna(df[col].mean())
-                elif fill_method == "Median":
-                    df[col] = df[col].fillna(df[col].median())
-                elif fill_method == "Specific value":
-                    val = st.number_input(f"Enter value to fill in {col}", key=f"num_val_{col}")
-                    df[col] = df[col].fillna(val)
-                elif fill_method == "Interpolate":
-                    df[col] = df[col].interpolate()
-            else:
-                # For non-numeric columns
-                fill_method = st.selectbox(
-                    f"Choose fill method for {col}:",
-                    ["Mode", "Specific value", "Forward fill", "Backward fill"],
-                    key=f"cat_{col}"
-                )
-                if fill_method == "Mode":
-                    df[col] = df[col].fillna(df[col].mode()[0])
-                elif fill_method == "Specific value":
-                    val = st.text_input(f"Enter value to fill in {col}", key=f"cat_val_{col}")
-                    df[col] = df[col].fillna(val)
-                elif fill_method == "Forward fill":
-                    df[col] = df[col].ffill()
-                elif fill_method == "Backward fill":
-                    df[col] = df[col].bfill()
-            
-            st.write(f"Missing values in {col} filled using {fill_method}")
-
-            st.write("### Data after handling missing values:")
-            st.write(df)
+        st.write("### Data after handling missing values:")
+        st.dataframe(df.style.highlight_null(color='yellow'), use_container_width=True)
     else:
-        st.write("No missing values found.")
+        st.success("No missing values found in the dataset.")
 
     # Encode categorical variables
     st.write("### Encode Categorical Variables")

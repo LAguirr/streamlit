@@ -2,7 +2,7 @@
 
 ## 📝 Description
 
-This Streamlit application provides an interactive web interface for [describe the main functionality]. Users can [describe key features and capabilities].
+This Streamlit application provides an interactive web interface for an easy understanding and tool for data cleaning. Users can upload datasets, then clean the data, and train his model to download it and use it.
 
 ## ✨ Features
 

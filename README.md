@@ -2,8 +2,6 @@
 
 ## 📝 Description
 
-[Add a brief description of what your Streamlit application does. For example:]
-
 This Streamlit application provides an interactive web interface for [describe the main functionality]. Users can [describe key features and capabilities].
 
 ## ✨ Features
@@ -11,7 +9,6 @@ This Streamlit application provides an interactive web interface for [describe t
 - Interactive web dashboard
 - Real-time data visualization
 - User-friendly interface
-- [Add other specific features of your app]
 
 ## 🚀 Getting Started
 
@@ -56,8 +53,6 @@ The application will open in your default web browser at `http://localhost:8501`
 
 ## 📊 Usage
 
-[Provide instructions on how to use your application. For example:]
-
 1. Navigate to the application URL
 2. Upload your data files using the file uploader
 3. Configure parameters using the sidebar controls
@@ -84,24 +79,16 @@ Key libraries used in this project:
 - `pandas` - Data manipulation and analysis
 - `numpy` - Numerical computing
 - `matplotlib` / `plotly` - Data visualization
-- [Add other specific dependencies]
 
 For a complete list, see `requirements.txt`.
 
 ## 🔧 Configuration
 
-[If your app has configuration options, describe them here. For example:]
 
 - Environment variables can be set in a `.env` file
 - Configuration parameters are available in the sidebar
 - Default settings can be modified in `config.py`
 
-## 📸 Screenshots
-
-[Add screenshots of your application here]
-
-![App Screenshot](screenshots/app_main.png)
-*Main dashboard view*
 
 ## 🤝 Contributing
 
@@ -113,7 +100,7 @@ For a complete list, see `requirements.txt`.
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License
 
 ## 👤 Author
 
@@ -123,7 +110,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - Built with [Streamlit](https://streamlit.io/)
-- [Add any other acknowledgments]
 
 ## 📞 Support
 
